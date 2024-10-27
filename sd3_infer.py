@@ -30,7 +30,7 @@ from sd3_impls import SDVAE, BaseModel, CFGDenoiser, SD3LatentFormat
 #################################################################################################
 
 
-def load_into(f, model, prefix, device, dtype=None):
+def load_into(f, model, prefix, device, dtype=None, req_grad=False):
     """Just a debugging-friendly hack to apply the weights in a safetensors file to the pytorch module."""
     for key in f.keys():
         if key.startswith(prefix) and not key.startswith("loss."):
@@ -54,6 +54,8 @@ def load_into(f, model, prefix, device, dtype=None):
                     tensor = tensor.to(dtype=dtype)
                 obj.requires_grad_(False)
                 obj.set_(tensor)
+                if req_grad:
+                    obj.requires_grad_(True)
             except Exception as e:
                 print(f"Failed to load key '{key}' in safetensors file: {e}")
                 raise e
@@ -116,7 +118,7 @@ class T5XXL:
 
 
 class SD3:
-    def __init__(self, model, shift, verbose=False):
+    def __init__(self, model, shift, verbose=False, req_grad=False):
         with safe_open(model, framework="pt", device="cpu") as f:
             self.model = BaseModel(
                 shift=shift,
@@ -126,7 +128,7 @@ class SD3:
                 dtype=torch.float16,
                 verbose=verbose,
             ).eval()
-            load_into(f, self.model, "model.", "cpu", torch.float16)
+            load_into(f, self.model, "model.", "cpu", torch.float16, req_grad)
 
 
 class VAE:
