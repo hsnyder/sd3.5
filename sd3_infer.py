@@ -1,3 +1,7 @@
+import sys, os
+here = os.path.dirname(os.path.abspath(__file__))
+sys.path.append(os.path.join(here))
+
 # NOTE: Must have folder `models` with the following files:
 # - `clip_g.safetensors` (openclip bigG, same as SDXL)
 # - `clip_l.safetensors` (OpenAI CLIP-L, same as SDXL)
@@ -65,10 +69,10 @@ CLIPG_CONFIG = {
 
 
 class ClipG:
-    def __init__(self):
-        with safe_open("models/clip_g.safetensors", framework="pt", device="cpu") as f:
-            self.model = SDXLClipG(CLIPG_CONFIG, device="cpu", dtype=torch.float32)
-            load_into(f, self.model.transformer, "", "cpu", torch.float32)
+    def __init__(self, path="models/clip_g.safetensors", dtype=torch.float16):
+        with safe_open(path, framework="pt", device="cpu") as f:
+            self.model = SDXLClipG(CLIPG_CONFIG, device="cpu", dtype=dtype)
+            load_into(f, self.model.transformer, "", "cpu", dtype)
 
 
 CLIPL_CONFIG = {
@@ -81,18 +85,18 @@ CLIPL_CONFIG = {
 
 
 class ClipL:
-    def __init__(self):
-        with safe_open("models/clip_l.safetensors", framework="pt", device="cpu") as f:
+    def __init__(self, path="models/clip_l.safetensors", dtype=torch.float16):
+        with safe_open(path, framework="pt", device="cpu") as f:
             self.model = SDClipModel(
                 layer="hidden",
                 layer_idx=-2,
                 device="cpu",
-                dtype=torch.float32,
+                dtype=dtype,
                 layer_norm_hidden_state=False,
                 return_projected_pooled=False,
                 textmodel_json_config=CLIPL_CONFIG,
             )
-            load_into(f, self.model.transformer, "", "cpu", torch.float32)
+            load_into(f, self.model.transformer, "", "cpu", dtype)
 
 
 T5_CONFIG = {
@@ -105,10 +109,10 @@ T5_CONFIG = {
 
 
 class T5XXL:
-    def __init__(self):
-        with safe_open("models/t5xxl.safetensors", framework="pt", device="cpu") as f:
-            self.model = T5XXLModel(T5_CONFIG, device="cpu", dtype=torch.float32)
-            load_into(f, self.model.transformer, "", "cpu", torch.float32)
+    def __init__(self, path="models/t5xxl.safetensors", dtype=torch.float16):
+        with safe_open(path, framework="pt", device="cpu") as f:
+            self.model = T5XXLModel(T5_CONFIG, device="cpu", dtype=dtype)
+            load_into(f, self.model.transformer, "", "cpu", dtype)
 
 
 class SD3:
@@ -432,5 +436,5 @@ def main(
         denoise,
     )
 
-
-fire.Fire(main)
+if __name__ == "__main__":
+    fire.Fire(main)

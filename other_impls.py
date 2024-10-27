@@ -184,7 +184,7 @@ class CLIPTextModel_(torch.nn.Module):
         intermediate_size = config_dict["intermediate_size"]
         intermediate_activation = config_dict["hidden_act"]
         super().__init__()
-        self.embeddings = CLIPEmbeddings(embed_dim, dtype=torch.float32, device=device)
+        self.embeddings = CLIPEmbeddings(embed_dim, dtype=dtype, device=device)
         self.encoder = CLIPEncoder(
             num_layers,
             embed_dim,
@@ -647,7 +647,7 @@ class T5Attention(torch.nn.Module):
             self.relative_attention_num_buckets = 32
             self.relative_attention_max_distance = 128
             self.relative_attention_bias = torch.nn.Embedding(
-                self.relative_attention_num_buckets, self.num_heads, device=device
+                self.relative_attention_num_buckets, self.num_heads, device=device, dtype=dtype
             )
 
     @staticmethod
@@ -809,7 +809,7 @@ class T5Stack(torch.nn.Module):
         device,
     ):
         super().__init__()
-        self.embed_tokens = torch.nn.Embedding(vocab_size, model_dim, device=device)
+        self.embed_tokens = torch.nn.Embedding(vocab_size, model_dim, device=device, dtype=dtype)
         self.block = torch.nn.ModuleList(
             [
                 T5Block(
